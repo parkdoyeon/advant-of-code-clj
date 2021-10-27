@@ -17,7 +17,7 @@
 
 
 ; part 2
-; This needs an improvement since inputs have to be checked empty
+; This needs an improvement since inputs always have to be checked not empty
 (defn reached_twice [inputs]
   (loop [sum 0
          iter_inputs inputs
