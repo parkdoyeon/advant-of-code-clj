@@ -17,6 +17,7 @@
 (defn map_has_target [target char_map]
      (some (fn [[_ v]] (= v target)) char_map))
 
+; Warn! Walk traverses form, an **arbitrary** data structure
 (->> "inputs/day-two.txt"
      slurp
      str/split-lines
