@@ -3,23 +3,19 @@
 
 ; part 1
 ; Use apply
-(->> "inputs/day-one.txt"
-    slurp
-    str/split-lines
+(comment
+    (->> (str/split-lines (slurp "resources/day-one.txt"))
     (map #(Integer/parseInt %))
-    (apply +)
-    )
+    (apply +)))
 
 ; Use reducer
-(->> "inputs/day-one.txt"
-     slurp
-     str/split-lines
-     (reduce #(+ %1 (Integer/parseInt %2)) 0)
-     )
+(comment
+    (->> (str/split-lines (slurp "resources/day-one.txt"))
+     (reduce #(+ %1 (Integer/parseInt %2)) 0)))
 
 ; part 2
 ; Use recur
-(defn loop_reached_twice [inputs]
+(defn loop-reached-twice [inputs]
   (loop [sum 0
          inputs inputs
          reached #{}]
@@ -31,7 +27,7 @@
         )))
 
 ; Use reducer
-(defn reached_twice [inputs]
+(defn reached-twice [inputs]
   (reduce
     (fn [[reached s] x]
       (if (reached (+ s x))
@@ -40,14 +36,12 @@
     [#{} 0]
     inputs))
 
-(->> "inputs/day-one.txt"
-     slurp
-     str/split-lines
+(comment
+    (->> (str/split-lines (slurp "resources/day-one.txt"))
      (map #(Integer/parseInt %))
      (cycle)
-     (reached_twice)
-     )
+     (reached-twice)))
 
 ; sample
-(comment (loop_reached_twice [1 2 -1]))
-(comment (reached_twice [1 2 -1 1]))
+(comment (loop-reached-twice [1 2 -1]))
+(comment (reached-twice [1 2 -1 1]))
