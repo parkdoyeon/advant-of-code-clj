@@ -1,7 +1,6 @@
 (ns day-two
   (:require [clojure.string :as str]
-            [clojure.walk :as walk]
-            [clojure.set :as set]))
+            [clojure.walk :as walk]))
 
 ; part 1
 ; Replace `frequencies`
@@ -9,8 +8,8 @@
   (->> (str/split txt #"")
        (reduce (fn [m c]
                  (assoc m c (inc (get m c 0))))
-               {})
-       ))
+               {})))
+
 
 (comment (char-count "aabc"))
 
@@ -23,13 +22,12 @@
   (->> (str/split-lines (slurp "resources/day-two.txt"))
        (map char-count)
        (walk/walk (fn [char-map]
-                    [(map-has-target 2 char-map), (map-has-target 3 char-map)]
-                    )
+                    [(map-has-target 2 char-map), (map-has-target 3 char-map)])
                   #(reduce (fn [[two three], [has-two has-three]]
                              [(if has-two (inc two) two), (if has-three (inc three) three)])
                            [0 0] %))
-       (apply *))
-  )
+       (apply *)))
+
 
 ; Use frequencies
 ; Replace walk/walk as reduce
@@ -48,15 +46,17 @@
 
 ; part 2
 (defn common-chars [t1 t2]
-  (if (= t1 t2)
-    '(true)
-    (map (fn [a b] (when (= a b) a)) t1 t2)
-    ))
+  "
+  in: [" a " " b " " c "] [" a " " b " " e "]
+  out: '(" a " " b " nil)
+  "
+  (when (not= t1 t2)                                        ; FIXME
+    (map (fn [a b] (when (= a b) a)) t1 t2)))
 
 (comment (common-chars ["a" "b" "c" "e" "f"] ["a" "b" "c" "k" "f"]))
 
 (comment (def txt-list (->> (str/split-lines (slurp "resources/day-two.txt"))
-                   (map #(str/split % #"")))))
+                            (map #(str/split % #"")))))
 
 (comment (->> (for [a txt-list
                     b txt-list

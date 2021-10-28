@@ -23,8 +23,7 @@
       sum
       (recur (+ sum (first inputs))
              (rest inputs)
-             (conj reached sum))
-      )))
+             (conj reached sum)))))
 
 ; Use reducer
 (defn reached-twice [inputs]
@@ -39,8 +38,8 @@
 (comment
   (->> (str/split-lines (slurp "resources/day-one.txt"))
        (map #(Integer/parseInt %))
-       (cycle)
-       (reached-twice)))
+       cycle
+       reached-twice))
 
 ; sample
 (comment (loop-reached-twice [1 2 -1]))
