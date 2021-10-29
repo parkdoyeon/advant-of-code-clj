@@ -1,20 +1,18 @@
 (ns day-one
   (:require [clojure.string :as str]))
 
-; part 1
-; Use apply
-(comment
-  (->> (str/split-lines (slurp "resources/day-one.txt"))
-       (map #(Integer/parseInt %))
-       (apply +)))
+; Set input data
+(comment (def nums (->>
+                     (str/split-lines (slurp "resources/day-one.txt"))
+                     (map #(Integer/parseInt %)))))
 
-; Use reducer
-(comment
-  (->> (str/split-lines (slurp "resources/day-one.txt"))
-       (reduce #(+ %1 (Integer/parseInt %2)) 0)))
+; part 1
+; Use `apply` or `reduce`
+(comment (apply + nums)
+         (reduce + nums))
 
 ; part 2
-; Use recur
+; Use `recur`
 (defn loop-reached-twice [inputs]
   (loop [sum 0
          inputs inputs
@@ -25,7 +23,7 @@
              (rest inputs)
              (conj reached sum)))))
 
-; Use reducer
+; Use `reduce`
 (defn reached-twice [inputs]
   (reduce
     (fn [[reached s] x]
@@ -36,8 +34,7 @@
     inputs))
 
 (comment
-  (->> (str/split-lines (slurp "resources/day-one.txt"))
-       (map #(Integer/parseInt %))
+  (->> nums
        cycle
        reached-twice))
 
