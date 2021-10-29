@@ -6,12 +6,12 @@
                      (str/split-lines (slurp "resources/day-one.txt"))
                      (map #(Integer/parseInt %)))))
 
-; part 1
+; Part 1
 ; Use `apply` or `reduce`
 (comment (apply + nums)
          (reduce + nums))
 
-; part 2
+; Part 2
 ; Use `recur`
 (defn loop-reached-twice [inputs]
   (loop [sum 0
@@ -33,11 +33,16 @@
     [#{} 0]
     inputs))
 
+; Sample
+(comment (loop-reached-twice [1 2 -1])
+         (reached-twice [1 2 -1 1]))
+
+; Solution
 (comment
   (->> nums
        cycle
-       reached-twice))
+       reached-twice)
+  (->> nums
+       cycle
+       loop-reached-twice))
 
-; sample
-(comment (loop-reached-twice [1 2 -1]))
-(comment (reached-twice [1 2 -1 1]))
