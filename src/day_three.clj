@@ -6,7 +6,7 @@
 ; Create template
 ; (
 ; {:id "#1", :left 2, :top 2, :width 5, :height 5},
-; {:id "#1", :left 2, :top 2, :width 5, :height 5},
+; {:id "#2", :left 2, :top 2, :width 5, :height 5},
 ; ...)
 
 (defn parse-order [order-txt]
@@ -21,7 +21,7 @@
 (comment (def orders (->>
                        (str/split-lines (slurp "resources/day-three.txt"))
                        (map parse-order)))
-         (def ids (into #{} (map #(get % :id) orders))))
+         (def ids (into #{} (map :id orders))))
 
 
 ; part 1
@@ -92,10 +92,10 @@
              (mark-fabric-id {:id "#2", :left 2, :top 2, :width 2, :height 2})))
 
 (comment
-  (->> (reduce #(mark-fabric-id %1 %2) {} orders)
+  (->> (reduce mark-fabric-id {} orders)
        vals                                                 ; remove keys
        (map vals)                                           ; remove inner keys
        flatten                                              ; remove list between 2-dimension arrays
-       (filter #(> (count %) 1))                            ; remove fabric which has single orders
+       (filter #(> (count %) 1))                            ; remove fabric which has single order
        (into #{})                                           ; remove duplicate set elements
        (reduce #(set/difference %1 %2) ids)))
