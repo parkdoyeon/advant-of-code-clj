@@ -2,14 +2,16 @@
   (:require [clojure.string :as str]))
 
 ; Set input data
-(comment (def nums (->>
-                     (str/split-lines (slurp "resources/day-one.txt"))
-                     (map #(Integer/parseInt %)))))
+(comment
+  (def nums (->>
+              (str/split-lines (slurp "resources/day-one.txt"))
+              (map #(Integer/parseInt %)))))
 
 ; Part 1
 ; Use `apply` or `reduce`
-(comment (apply + nums)
-         (reduce + nums))
+(comment
+  (apply + nums)
+  (reduce + nums))
 
 ; Part 2
 ; Use `recur`
@@ -34,8 +36,9 @@
     inputs))
 
 ; Sample
-(comment (loop-reached-twice [1 2 -1])
-         (reached-twice [1 2 -1 1]))
+(comment
+  (loop-reached-twice [1 2 -1])
+  (reached-twice [1 2 -1 1]))
 
 ; Solution
 (comment
