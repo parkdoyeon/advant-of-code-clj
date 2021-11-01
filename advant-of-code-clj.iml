@@ -9,7 +9,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Deps: org.clojure/clojure:1.10.3" level="project" />
+    <orderEntry type="library" name="Deps: clj-time:0.15.2" level="project" />
     <orderEntry type="library" name="Deps: org.clojure/spec.alpha:0.2.194" level="project" />
     <orderEntry type="library" name="Deps: org.clojure/core.specs.alpha:0.2.56" level="project" />
+    <orderEntry type="library" name="Deps: joda-time:2.10" level="project" />
   </component>
 </module>
