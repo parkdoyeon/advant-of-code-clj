@@ -45,7 +45,7 @@
       (update-in [key :time] conj minute)))
 
 ; Part 1
-; 1. Parse sleep durations
+; 1. Parse daily action as single object
 ; 2. Find a guard sleep most
 ; 3. Find the time when the guard is asleep most frequently
 (defn parse-action [logs]
@@ -73,17 +73,11 @@
          (reduce (fn [[start span] min]
                    (if (nil? start)
                      [min span]
-                     [nil
-                      (map-indexed (fn [idx elem]
-                                     (if (and (>= idx start)
-                                              (< idx min))
-                                       (inc elem)
-                                       elem))
-                                   span)]))
+                     [nil (reduce #(update %1 %2 inc) span (range start min))]))
                  [nil span])
          peek)))
 
-(comment (mark-span (take 60 (repeat 0)) [1 5 5 10]))
+(comment (mark-span (into [] (take 60 (repeat 0))) [1 5 5 10]))
 
 (defn calculate-time-by-id [parsed-actions]
   "
@@ -96,20 +90,20 @@
   [out]
    {
      {#56 {:total 30, :frequency '(0 0 0 0 0 ...)}}
+     ...
    }
   "
   (reduce (fn [acc [[_ id]
                     {duration :duration time :time}]]
             (-> acc
-                (update-in [id :total] (fn [total]
-                                         (if (nil? total)
-                                           (apply + duration)
-                                           (+ total (apply + duration)))))
-
-                (update-in [id :frequency] (fn [span]
-                                             (if (nil? span)
-                                               (mark-span (take 60 (repeat 0)) time)
-                                               (mark-span span time))))))
+                (update-in
+                  [id :total]
+                  #(+ (if (nil? %) 0 %) (apply + duration)))
+                (update-in
+                  [id :frequency]
+                  #(mark-span
+                     (if (nil? %) (into [] (take 60 (repeat 0))) %)
+                     time))))
           {}
           parsed-actions))
 
@@ -126,6 +120,7 @@
   (calculate-time-by-id {["1518-09-01" "#2363"] {:duration [10], :time [10 20]},
                          ["1518-09-12" "#463"]  {:duration [5 5], :time [1 6 5 11]}
                          ["1518-09-13" "#2363"] {:duration [10], :time [10 20]}})
+
   ; part 1
   (let [[id {frequency :frequency}] (->> logs
                                          parse-action
@@ -133,12 +128,13 @@
                                          (sort-by #(:total (val %)) #(compare %2 %1))
                                          first)]
     (* (Integer/parseInt (subs id 1)) (.indexOf frequency (apply max frequency))))
+
   ; part 2
   (let [[id {most-frequent-min :most-frequent-min}] (->> logs
                                                          parse-action
                                                          calculate-time-by-id
                                                          find-top-frequency
-                                                         (sort-by #(:most-frequent (val %)) #(compare %2 %1))
+                                                         (sort-by #(:most-frequent val %) #(compare %2 %1))
                                                          first)]
     (* (Integer/parseInt (subs id 1)) most-frequent-min)))
 
