@@ -1,7 +1,6 @@
 (ns day_three
   (:require [clojure.string :as str]
-            [clojure.set :as set]
-            [clojure.walk :as walk]))
+            [clojure.set :as set]))
 
 ; Create template
 ; (

@@ -10,7 +10,6 @@
                  (assoc m c (inc (get m c 0))))
                {})))
 
-
 (comment (char-count "aabc"))
 
 (defn map-has-target [target char-map]
