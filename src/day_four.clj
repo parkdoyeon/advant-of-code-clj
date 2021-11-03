@@ -26,12 +26,6 @@
      :action   action
      :maybe-id maybe-id}))
 
-; Set input data
-(comment (def logs (->>
-                     (str/split-lines (slurp "resources/day-four.txt"))
-                     sort
-                     (map parse-log))))
-
 (defn insert-time [key acc minute]
   (-> acc
       (update-in [key :duration] conj minute)
@@ -66,18 +60,26 @@
                [nil {}])
        peek))
 
-(defn mark-span [span time]
-  (if (= [] time)
+(defn mark-span [fall wake span]
+  (map-indexed (fn [min frequency]
+                 (if (and (>= min fall) (< min wake))
+                   (inc frequency)
+                   frequency))
+               span))
+
+(defn aggregate-sleep-frequency [span time]
+  (if (empty? time)
     span
     (->> time
-         (reduce (fn [[start span] min]
-                   (if (nil? start)
-                     [min span]
-                     [nil (reduce #(update %1 %2 inc) span (range start min))]))
+         (reduce (fn [[sleep span] sleep-or-wake]
+                   (if (nil? sleep)
+                     [sleep-or-wake span]
+                     [nil (mark-span sleep sleep-or-wake span)]))
                  [nil span])
          peek)))
 
-(comment (mark-span (into [] (take 60 (repeat 0))) [1 5 5 10]))
+; test
+(comment (aggregate-sleep-frequency (into [] (take 60 (repeat 0))) [1 5 5 10]))
 
 (defn calculate-time-by-id [parsed-actions]
   "
@@ -101,7 +103,7 @@
                   #(+ (if (nil? %) 0 %) (apply + duration)))
                 (update-in
                   [id :frequency]
-                  #(mark-span
+                  #(aggregate-sleep-frequency
                      (if (nil? %) (into [] (take 60 (repeat 0))) %)
                      time))))
           {}
@@ -121,6 +123,11 @@
                          ["1518-09-12" "#463"]  {:duration [5 5], :time [1 6 5 11]}
                          ["1518-09-13" "#2363"] {:duration [10], :time [10 20]}})
 
+  (def logs (->>
+              (str/split-lines (slurp "resources/day-four.txt"))
+              sort
+              (map parse-log)))
+
   ; part 1
   (let [[id {frequency :frequency}] (->> logs
                                          parse-action
@@ -137,7 +144,3 @@
                                                          (sort-by #(:most-frequent val %) #(compare %2 %1))
                                                          first)]
     (* (Integer/parseInt (subs id 1)) most-frequent-min)))
-
-
-
-
