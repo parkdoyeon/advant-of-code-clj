@@ -4,16 +4,15 @@
 (defn check [to-parse to-remain]
   (let [parsed (if (empty? to-parse) [(first to-remain)] to-parse)
         remains (if (empty? to-parse) (rest to-remain) to-remain)
-        c1 (last parsed)
+        c1 (peek parsed)
         c2 (first remains)]
-    (cond
-      (= c1 c2) [(conj parsed (first remains)) (rest remains)]
-      (or (= c1 (.toUpperCase c2)) (= (.toUpperCase c1) c2)) [(pop parsed) (rest remains)]
-      :else [(conj parsed (first remains)) (rest remains)])))
+    (if (or (= c1 (.toUpperCase c2)) (= (.toUpperCase c1) c2))
+      [(pop parsed) (rest remains)]
+      [(conj parsed (first remains)) (rest remains)])))
 
 ; Try using reduce
 ; FIXME try not even using reduce 🧐
-(defn react [txt-list]
+(defn reduce-react [txt-list]
   (reduce (fn [[parsed remains] _]
             (if (empty? remains)
               (reduced parsed)
@@ -49,13 +48,12 @@
   (def reacted-count (count reacted))
 
   ; Part 2
-  (-> (map #(.toString (char %)) (range (int \a) (int \z)))
-      (reduce (fn [acc alphabet]
-                (update acc alphabet (fn [_] (-> (remove-by-alphabet txt alphabet)
-                                                 react
-                                                 count)))
-                {}))
-      (apply min-key val)))
+  (->> (map #(.toString (char %)) (range (int \a) (int \z)))
+       (map (fn [alphabet]
+              (->> (remove-by-alphabet txt alphabet)
+                   reduce-react
+                   count)))
+       min))
 
 
 
