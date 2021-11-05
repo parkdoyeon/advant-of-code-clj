@@ -25,14 +25,16 @@
                    (assoc acc field info)))
                passport)))
 
-(defn line-into-passport [[acc num] line]
-  ; in
-  ; [{} 0] "eyr:2040 pid:785862801"
-  ; out
-  ; [{0 ["eyr:2040 pid:785862801"]} 0]
+(defn line-into-passport [[acc passport-id] line]
+  "
+  in
+  [{} 0] "eyr:2040 pid:785862801"
+  out
+  [{0 ["eyr:2040 pid:785862801"]} 0]
+  "
   (if (= line "")
-    [acc (inc num)]
-    [(update acc num #(parse-field-info % line)) num]))
+    [acc (inc passport-id)]
+    [(update acc passport-id #(parse-field-info % line)) passport-id]))
 
 (comment
   ; Parser test
