@@ -39,16 +39,14 @@
     [(if (infinite? [x y]) "inf" "fin")
      (find-closest [x y] locations)]))
 
-(defn find-finite-max [areas]
+(defn filter-infinite [areas]
   (let [infinite-ids (->> (filter #(= (first (first %)) "inf") areas)
                           (map first)
                           (map second)
                           (into #{}))]
     (->> areas
          (filter #(and (nil? (infinite-ids (second (first %))))
-                       (= (first (first %)) "fin")))
-         (sort-by second)
-         (last))))
+                       (= (first (first %)) "fin"))))))
 
 (defn within? [current locations]
   (->> locations
@@ -66,7 +64,9 @@
   (->> locations
        mark-area-by-id
        frequencies
-       find-finite-max)
+       filter-infinite
+       (sort-by second)
+       last)
 
   ; part 2
   (->> locations
