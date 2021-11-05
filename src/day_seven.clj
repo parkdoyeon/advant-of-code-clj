@@ -47,14 +47,15 @@
        do-work))
 
 (comment
+  ; test
   (->> dashboard
-       work
-       work
-       work
+       #_work
+       #_work
        work)
 
+  ; part 1
   (->> (iterate work dashboard)
-       (take 27)
-       last
+       (filter #(empty? (:remain %)))
+       first
        :done
-       (apply str)))
+       (apply str))
