@@ -34,19 +34,18 @@
       id1)))
 
 (defn mark-area-by-id [locations]
-  (for [y (range (first y-sorted) (last y-sorted))
-        x (range (first x-sorted) (last x-sorted))]
-    [(if (infinite? [x y]) "inf" "fin")
+  (for [y (range (first y-sorted) (inc (last y-sorted)))
+        x (range (first x-sorted) (inc (last x-sorted)))]
+    [(if (infinite? [x y]) :inf :fin)
      (find-closest [x y] locations)]))
 
 (defn filter-infinite [areas]
-  (let [infinite-ids (->> (filter #(= (first (first %)) "inf") areas)
+  (let [infinite-ids (->> (filter #(= (ffirst %) :inf) areas)
                           (map first)
                           (map second)
                           (into #{}))]
-    (->> areas
-         (filter #(and (nil? (infinite-ids (second (first %))))
-                       (= (first (first %)) "fin"))))))
+    (filter #(nil? (infinite-ids (second (first %))))
+            areas)))
 
 (defn within? [current locations]
   (->> locations
@@ -55,9 +54,10 @@
        (> 10000)))
 
 (defn mark-area-within [locations]
-  (for [y (range (- (first y-sorted) 1) (+ (last y-sorted) 2))
-        x (range (- (first x-sorted) 1) (+ (last x-sorted) 2))]
-    (within? [x y] locations)))
+  (for [y (range (first y-sorted) (inc (last y-sorted)))
+        x (range (first x-sorted) (inc (last x-sorted)))
+        :when (within? [x y] locations)]
+    true))
 
 (comment
   ; part 1
@@ -65,11 +65,9 @@
        mark-area-by-id
        frequencies
        filter-infinite
-       (sort-by second)
-       last)
+       (apply max-key val))
 
   ; part 2
   (->> locations
        mark-area-within
-       (remove false?)
        count))
