@@ -45,7 +45,8 @@
          (- (inc (int (first (.toCharArray alphabet)))))
          (+ 60))))
 
-(defn allocate-work [job idle-moment elves]
+(defn allocate-work [elves job idle-moment]
+  (print job (work-time job) elves "\n")
   (let [time-taken (work-time job)]
     (-> elves
         (update 0 #(if (nil? time-taken)
@@ -59,10 +60,10 @@
         idle-moment (get dashboard :idle-moment)
         connected (get-in dashboard [:connections job])]
     (if (nil? job)
-      (update dashboard :elves #(allocate-work job idle-moment %))
+      (update dashboard :elves allocate-work job idle-moment)
       (-> dashboard
-          (update :done #(conj % job))
-          (update :elves #(allocate-work job idle-moment %))
+          (update :done conj job)
+          (update :elves allocate-work job idle-moment)
           (update :remain #(map (fn [[job count]]
                                   (if (connected job)
                                     [job (dec count)]
@@ -136,5 +137,7 @@
   ; part 2
   (->> (initialize-dashboard edges 5)
        (iterate work-many)
+       #_(take 4)
+       #_last
        (filter #(empty? (:remain %)))
        first))
