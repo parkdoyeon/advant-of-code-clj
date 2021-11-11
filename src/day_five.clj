@@ -1,24 +1,30 @@
 (ns day-five
   (:require [clojure.string :as str]))
 
-(defn check [to-parse to-remain]
-  (let [parsed (if (empty? to-parse) [(first to-remain)] to-parse)
-        remains (if (empty? to-parse) (rest to-remain) to-remain)
-        c1 (peek parsed)
-        c2 (first remains)]
-    (if (or (= c1 (.toUpperCase c2)) (= (.toUpperCase c1) c2))
-      [(pop parsed) (rest remains)]
-      [(conj parsed (first remains)) (rest remains)])))
+(def txt (slurp "./resources/day-five.txt"))
+(def txt-list (-> txt
+                  (str/split #"")
+                  (into [])))
 
-; Try using reduce
-; FIXME try not even using reduce 🧐
+(defn check
+  ([[to-parse to-remain]]                                   ; in case of using iterate
+   (check to-parse to-remain))
+  ([to-parse to-remain]
+   (let [parsed (if (empty? to-parse) [(first to-remain)] to-parse)
+         remains (if (empty? to-parse) (rest to-remain) to-remain)
+         c1 (peek parsed)
+         c2 (first remains)]
+     (if (or (= c1 (.toUpperCase c2)) (= (.toUpperCase c1) c2))
+       [(pop parsed) (rest remains)]
+       [(conj parsed (first remains)) (rest remains)]))))
+
+
 (defn reduce-react [txt-list]
   (reduce (fn [[parsed remains] _]
             (if (empty? remains)
               (reduced parsed)
               (check parsed remains))) [[] txt-list] (range)))
 
-; Try using loop
 (defn loop-react [txt-list]
   (loop [parsed []
          remains txt-list]
@@ -26,6 +32,7 @@
       parsed
       (let [[n-parsed n-remains] (check parsed remains)]
         (recur n-parsed n-remains)))))
+
 
 (defn remove-by-alphabet [txt alphabet]
   (let [cap-removal-target (.toUpperCase alphabet)
@@ -39,13 +46,19 @@
   (react ["a" "A" "k" "c" "C" "K" "d" "b" "e" "E"])         ; results ["d" "b"]
   (remove-by-alphabet "aaaaBBBcccC" "c")                    ; results ["a" "a" "a" "a" "B" "B" "B"]
 
-  (def txt (slurp "./resources/day-five.txt"))
-
   ; Part 1
-  (def reacted (-> txt
-                   (str/split #"")
-                   react))
-  (def reacted-count (count reacted))
+  (-> txt-list
+      reduce-react
+      count)
+
+  (-> txt-list
+      loop-react
+      count)
+
+  (->> (iterate check [[] txt-list])
+       (filter #(empty? (second %)))
+       ffirst
+       count)
 
   ; Part 2
   (->> (map #(.toString (char %)) (range (int \a) (int \z)))
@@ -54,9 +67,3 @@
                    reduce-react
                    count)))
        min))
-
-
-
-
-
-
