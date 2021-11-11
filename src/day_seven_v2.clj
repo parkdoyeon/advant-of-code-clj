@@ -11,11 +11,6 @@
                                     (map #(vector % default))
                                     (into {})))
 
-(defn prepare-elves [elves-count]
-  (->> (range elves-count)
-       (map #(vector % {:do nil, :end 0}))
-       (into {})))
-
 (defn initialize-dashboard [edges elves-count]
   {:connections (reduce (fn [acc [from to]]
                           (update acc from conj to))
@@ -27,8 +22,9 @@
                         edges)
    :todo        []
    :done        []
-   :elves       (prepare-elves elves-count)
-   :min         0})
+   :elves       []
+   :available   elves-count
+   :min         -1}) ; job is loaded from 0, time passed from the start
 
 (defn decrease-remain [remain connections finished-jobs]
   (if (empty? finished-jobs)
@@ -48,15 +44,13 @@
          (- (inc (int (first (.toCharArray alphabet)))))
          (+ 60))))
 
-(defn find-idle-elves [elves]
-  (->> (filter #(>= 0 (:end (val %))) elves)
-       (mapv key)))
+(defn idle? [{:keys [elves available] :as dashboard}]
+  (> available (count elves)))
 
-(defn distribute-work [{:keys [elves todo] :as dashboard}]
-  (let [job (peek todo)
-        elf (peek (find-idle-elves elves))]
+(defn distribute-work [{:keys [todo] :as dashboard}]
+  (let [job (peek todo)]
     (-> dashboard
-        (assoc-in [:elves elf] {:do job, :end (work-time job)})
+        (update :elves conj {:do job, :end (work-time job)})
         (update :todo pop))))
 
 (defn update-todo [dashboard]
@@ -67,23 +61,23 @@
         (update :todo #(-> (apply conj % new-todo) sort reverse vec))
         (update :remain #(remove (fn [[_ count]] (zero? count)) %)))))
 
-(defn done-distribute? [{:keys [elves todo] :as _dashboard}]
-  (or (empty? (find-idle-elves elves))
+(defn done-distribute? [{:keys [todo] :as dashboard}]
+  (or (not (idle? dashboard))
       (empty? todo)))
 
 (defn update-done [{:keys [connections elves] :as dashboard}]
   (let [finished-jobs (->> elves
-                           (filter (fn [[_ {do :do end :end}]]
-                                     (and (string? do) (zero? end))))
-                           (mapv #(:do (val %))))]
+                           (filter #(zero? (:end %)))
+                           (mapv #(:do %)))]
     (-> dashboard
         (update :done #(apply conj % finished-jobs))
+        (update :elves (fn [elves] (->> elves (remove #(zero? (:end %))) (into []))))
         (update :remain #(decrease-remain % connections finished-jobs)))))
 
 (defn tick-minute [{:keys [elves] :as dashboard}]
   (let [minute-passed-elves (reduce-kv
                               #(assoc %1 %2 (update %3 :end dec))
-                              {}
+                              []
                               elves)]
     (-> dashboard
         (assoc :elves minute-passed-elves)
@@ -92,8 +86,8 @@
 (defn passing-time [dashboard]
   "
   Every minutes
-  - Check there's finished job, append to the :done and decrease connected job count in :remain
-  - Find priory job (0 remains), update :todo, and remove 0 ahead job from :remain
+  - Check if there's finished job, update :done, decrease ahead job count in :remain
+  - Find priory job (0 remains), update :todo, and remove nothing ahead job in :remain
   - Let idle elves work
   - Pass minute and lessen each elves :end
   "
@@ -109,13 +103,14 @@
   ; part 1
   (->> (initialize-dashboard edges 1)
        (iterate passing-time)
-       (filter #(= (count (:done %)) 26))
-       first
+       (filter #(empty? (:elves %)))
+       second
        :done
        (apply str))
 
   ; part 2
   (->> (initialize-dashboard edges 5)
        (iterate passing-time)
-       (filter #(= (count (:done %)) 26))
-       first))
+       (filter #(empty? (:elves %)))
+       second
+       :min))
