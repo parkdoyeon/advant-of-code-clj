@@ -24,7 +24,8 @@
    :done        []
    :elves       []
    :available   elves-count
-   :min         -1}) ; job is loaded from 0, time passed from the start
+   :second      -1})                                        ; job is loaded from 0, time passed from the start
+
 
 (defn decrease-remain [remain connections finished-jobs]
   (if (empty? finished-jobs)
@@ -74,22 +75,22 @@
         (update :elves (fn [elves] (->> elves (remove #(zero? (:end %))) (into []))))
         (update :remain #(decrease-remain % connections finished-jobs)))))
 
-(defn tick-minute [{:keys [elves] :as dashboard}]
+(defn tick-second [{:keys [elves] :as dashboard}]
   (let [minute-passed-elves (reduce-kv
                               #(assoc %1 %2 (update %3 :end dec))
                               []
                               elves)]
     (-> dashboard
         (assoc :elves minute-passed-elves)
-        (update :min inc))))
+        (update :second inc))))
 
-(defn passing-time [dashboard]
+(defn after-second [dashboard]
   "
   Every minutes
   - Check if there's finished job, update :done, decrease ahead job count in :remain
   - Find priory job (0 remains), update :todo, and remove nothing ahead job in :remain
   - Let idle elves work
-  - Pass minute and lessen each elves :end
+  - Pass second and lessen each elves :end
   "
   (->> dashboard
        update-done
@@ -97,12 +98,12 @@
        (iterate distribute-work)
        (filter done-distribute?)
        first
-       tick-minute))
+       tick-second))
 
 (comment
   ; part 1
   (->> (initialize-dashboard edges 1)
-       (iterate passing-time)
+       (iterate after-second)
        (filter #(empty? (:elves %)))
        second
        :done
@@ -110,7 +111,7 @@
 
   ; part 2
   (->> (initialize-dashboard edges 5)
-       (iterate passing-time)
+       (iterate after-second)
        (filter #(empty? (:elves %)))
        second
-       :min))
+       :second))
