@@ -34,17 +34,21 @@
         (recur n-parsed n-remains)))))
 
 
-(defn remove-by-alphabet [txt alphabet]
+(defn eliminate-alphabet [string alphabet]
+  "
+  Eliminate upper/lower case alphabet from string
+  Return vector list string
+  "
   (let [cap-removal-target (.toUpperCase alphabet)
         regex (re-pattern (str alphabet "|" cap-removal-target))]
-    (-> (str/replace txt regex "")
+    (-> (str/replace string regex "")
         (str/split #""))))
 
 (comment
   ; test
   (check ["c"] ["C" "A" "b" "a"])                           ; results [[] ("A" "b" "a")]
   (react ["a" "A" "k" "c" "C" "K" "d" "b" "e" "E"])         ; results ["d" "b"]
-  (remove-by-alphabet "aaaaBBBcccC" "c")                    ; results ["a" "a" "a" "a" "B" "B" "B"]
+  (eliminate-alphabet "aaaaBBBcccC" "c")                    ; results ["a" "a" "a" "a" "B" "B" "B"]
 
   ; Part 1
   (-> txt-list
@@ -63,7 +67,7 @@
   ; Part 2
   (->> (map #(.toString (char %)) (range (int \a) (int \z)))
        (map (fn [alphabet]
-              (->> (remove-by-alphabet txt alphabet)
+              (->> (eliminate-alphabet txt alphabet)
                    reduce-react
                    count)))
        min))
