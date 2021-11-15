@@ -28,9 +28,9 @@
 (defn line-into-passport [[acc passport-id] line]
   "
   in
-  [{} 0] "eyr:2040 pid:785862801"
+  [{} 0] eyr:2040 pid:785862801
   out
-  [{0 ["eyr:2040 pid:785862801"]} 0]
+  [{0 [eyr:2040 pid:785862801]} 0]
   "
   (if (= line "")
     [acc (inc passport-id)]
@@ -39,74 +39,82 @@
 (comment
   ; Parser test
   (line-into-object [{} 0] "eyr:2040 pid:785862801")
+
   (parse-field-info {} "iyr:2017 ecl:amb")
-  (= (map height? ["123cm" "40in" "193cm" "200kg" "60in"])
-     '(nil nil "193cm" nil "60in")))
 
-; Spec functions
+  ; test
+  (assert
+    (= (mapv height? ["123cm" "40in" "193cm" "200kg" "60in"])
+       [nil
+        nil
+        {:height 193 :unit "cm"}
+        nil
+        {:height 60 :unit "in"}]))
 
-(defn height? [height-str]
-  (let [len (count height-str)]
-    (if-let [unit (re-matches #"cm|in" (subs height-str (- len 2) len))]
-      (if-let [number (Integer/parseInt (subs height-str 0 (- len 2)))]
-        (if (= unit "cm")
-          (when (and (>= number 150) (<= number 193)) height-str)
-          (when (and (>= number 59) (<= number 76)) height-str))))))
+  ; Spec functions
 
-(s/def :part-one/byr int?)
-(s/def :part-one/iyr int?)
-(s/def :part-one/eyr int?)
-(s/def :part-one/hgt string?)
-(s/def :part-one/hcl string?)
-(s/def :part-one/ecl string?)
-(s/def :part-one/pid string?)
-(s/def :part-one/cid string?)
+  (defn height? [height-str]
+    (let [len (count height-str)]
+      (if-let [unit (re-matches #"cm|in" (subs height-str (- len 2) len))]
+        (if-let [number (Integer/parseInt (subs height-str 0 (- len 2)))]
+          (if (= unit "cm")
+            (when (and (>= number 150) (<= number 193)) {:height number :unit unit})
+            (when (and (>= number 59) (<= number 76)) {:height number :unit unit}))))))
 
-(s/def :part-one/passport (s/keys :req-un [:part-one/byr
-                                           :part-one/iyr
-                                           :part-one/eyr
-                                           :part-one/hgt
-                                           :part-one/hcl
-                                           :part-one/ecl
-                                           :part-one/pid]
-                                  :opt-un [:part-one/cid]))
+  (s/def :part-one/byr int?)
+  (s/def :part-one/iyr int?)
+  (s/def :part-one/eyr int?)
+  (s/def :part-one/hgt string?)
+  (s/def :part-one/hcl string?)
+  (s/def :part-one/ecl string?)
+  (s/def :part-one/pid string?)
+  (s/def :part-one/cid string?)
 
-(s/def :part-two/ecl-types #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"})
-(s/def :part-two/byr (s/int-in 1920 2003))
-(s/def :part-two/iyr (s/int-in 2010 2021))
-(s/def :part-two/eyr (s/int-in 2020 2031))
-(s/def :part-two/hgt #(height? %))
-(s/def :part-two/hcl #(re-matches #"#[0-9a-fA-F]{6}" %))
-(s/def :part-two/ecl #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"})
-(s/def :part-two/pid #(re-matches #"[0-9]{9}" %))
-(s/def :part-two/cid string?)
+  (s/def :part-one/passport (s/keys :req-un [:part-one/byr
+                                             :part-one/iyr
+                                             :part-one/eyr
+                                             :part-one/hgt
+                                             :part-one/hcl
+                                             :part-one/ecl
+                                             :part-one/pid]
+                                    :opt-un [:part-one/cid]))
 
-(s/def :part-two/passport (s/keys :req-un [:part-two/byr
-                                           :part-two/iyr
-                                           :part-two/eyr
-                                           :part-two/hgt
-                                           :part-two/hcl
-                                           :part-two/ecl
-                                           :part-two/pid]
-                                  :opt-un [:part-two/cid]))
+  (s/def :part-two/ecl-types #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"})
+  (s/def :part-two/byr (s/int-in 1920 2003))
+  (s/def :part-two/iyr (s/int-in 2010 2021))
+  (s/def :part-two/eyr (s/int-in 2020 2031))
+  (s/def :part-two/hgt #(height? %))
+  (s/def :part-two/hcl #(re-matches #"#[0-9a-fA-F]{6}" %))
+  (s/def :part-two/ecl #{"amb" "blu" "brn" "gry" "grn" "hzl" "oth"})
+  (s/def :part-two/pid #(re-matches #"[0-9]{9}" %))
+  (s/def :part-two/cid string?)
 
-(def valid-pt1-passport? (partial s/valid? :part-one/passport))
-(def valid-pt2-passport? (partial s/valid? :part-two/passport))
+  (s/def :part-two/passport (s/keys :req-un [:part-two/byr
+                                             :part-two/iyr
+                                             :part-two/eyr
+                                             :part-two/hgt
+                                             :part-two/hcl
+                                             :part-two/ecl
+                                             :part-two/pid]
+                                    :opt-un [:part-two/cid]))
 
-(comment
-  ; data
-  (def passports (let [[passports count] (->> (slurp "resources/twenty-day-four.txt")
-                                              (str/split-lines)
-                                              (reduce line-into-passport [{} 0]))]
-                   (vals passports)))
+  (def valid-pt1-passport? (partial s/valid? :part-one/passport))
+  (def valid-pt2-passport? (partial s/valid? :part-two/passport))
 
-  ; Part 1
-  (->> (map valid-pt1-passport? passports)
-       (filter true?)
-       count)
+  (comment
+    ; data
+    (def passports (let [[passports count] (->> (slurp "resources/twenty-day-four.txt")
+                                                (str/split-lines)
+                                                (reduce line-into-passport [{} 0]))]
+                     (vals passports)))
 
-  ; Part 2
-  (->> (map valid-pt2-passport? passports)
-       (filter true?)
-       count))
+    ; Part 1
+    (->> (map valid-pt1-passport? passports)
+         (filter true?)
+         count)
+
+    ; Part 2
+    (->> (map valid-pt2-passport? passports)
+         (filter true?)
+         count)))
 
